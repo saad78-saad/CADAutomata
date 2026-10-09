@@ -1,0 +1,5 @@
+pydantic>=2.0
+pydantic-settings
+sentence-transformers
+trimesh
+pywin32

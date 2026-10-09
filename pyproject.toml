@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cad_automata"
+version = "0.1.0"
+description = "BOM-driven RAG and CAD adaptation framework"
+dependencies = [
+    "pydantic>=2.0",
+    "pydantic-settings",
+    "sentence-transformers",
+    "trimesh",
+    "pywin32"
+]
