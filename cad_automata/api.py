@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from pathlib import Path
 import os
@@ -10,6 +11,15 @@ from cad_automata.adaptation.engine import AdaptationEngine
 from cad_automata.integration.cad_client import CADClient
 
 app = FastAPI(title="CADAutomata Cloud API", version="0.1.0")
+
+# Enable CORS for frontend communication
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class ProcessBOMRequest(BaseModel):
     component_id: str
