@@ -22,7 +22,6 @@ class ProcessBOMRequest(BaseModel):
 @app.post("/api/process-component")
 def process_component(req: ProcessBOMRequest):
     try:
-        # 1. Map request to BOMItem
         bom_item = BOMItem(
             component_id=req.component_id,
             name=req.name,
@@ -32,11 +31,9 @@ def process_component(req: ProcessBOMRequest):
             material=req.material
         )
 
-        # 2. RAG Vector Store search
         vector_store = LocalVectorStore()
         match = vector_store.search(query_text=bom_item.name)
 
-        # 3. Geometric parsing / Mock metrics
         metrics = GeometricMetrics(
             bounding_box_dims=(100.0, 50.0, 20.0),
             volume=10000.0,
@@ -44,10 +41,8 @@ def process_component(req: ProcessBOMRequest):
             hole_count=4
         )
 
-        # 4. Adaptation engine fitting evaluation
         delta = AdaptationEngine.evaluate_fitting(bom_item, metrics)
 
-        # 5. CAD Client execution (runs in cloud mock/simulation mode)
         cad_client = CADClient()
         output_filename = f"output_{bom_item.component_id}.sldprt"
         cad_client.open_part(match.get('file_path', 'sample.stl'))
