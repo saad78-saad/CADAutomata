@@ -6,5 +6,6 @@ dependencies = [
     "pydantic>=2.0",
     "pydantic-settings",
     "sentence-transformers",
-    "trimesh"
+    "trimesh",
+    "pywin32>=300; sys_platform == 'win32'"
 ]
