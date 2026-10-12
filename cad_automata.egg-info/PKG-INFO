@@ -6,4 +6,4 @@ Requires-Dist: pydantic>=2.0
 Requires-Dist: pydantic-settings
 Requires-Dist: sentence-transformers
 Requires-Dist: trimesh
-Requires-Dist: pywin32
+Requires-Dist: pywin32>=300; sys_platform == "win32"

@@ -3,6 +3,7 @@ name = "cad_automata"
 version = "0.1.0"
 description = "BOM-driven RAG and CAD adaptation framework"
 dependencies = [
+    "fastapi",
     "pydantic>=2.0",
     "pydantic-settings",
     "sentence-transformers",

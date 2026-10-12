@@ -2,4 +2,6 @@ pydantic>=2.0
 pydantic-settings
 sentence-transformers
 trimesh
-pywin32
+
+[:sys_platform == "win32"]
+pywin32>=300
