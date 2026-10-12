@@ -10,7 +10,14 @@ from cad_automata.geometry.parser import GeometryParser, GeometricMetrics
 from cad_automata.adaptation.engine import AdaptationEngine
 from cad_automata.integration.cad_client import CADClient
 
-app = FastAPI(title="CADAutomata Cloud API", version="0.1.0")
+app = FastAPI(
+    title="CADAutomata Cloud API",
+    version="0.1.0",
+    servers=[
+        {"url": "https://cadautomata.onrender.com", "description": "Render Production Server"},
+        {"url": "http://localhost:8000", "description": "Local Development Server"}
+    ]
+)
 
 # Enable CORS for frontend communication
 app.add_middleware(
