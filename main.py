@@ -1,48 +1,58 @@
 from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import Dict, Any, Optional
+import queue
 
 app = FastAPI(title="CADAutomata Cloud API", version="0.1.0")
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# In-memory task queue (or use Redis/Database for persistence)
+task_queue = queue.Queue()
+task_results = {}
 
-# Temporary in-memory queue for tasks
-task_queue = []
-
-class ProcessBOMRequest(BaseModel):
+class BOMTaskRequest(BaseModel):
     component_id: str
     name: str
-    dx: float
-    dy: float
-    dz: float
-    output_path: str
+    dx: float = 0.0
+    dy: float = 0.0
+    dz: float = 0.0
+    file_path: Optional[str] = None
 
-@app.get("/health")
-def health_check():
-    return {"status": "healthy", "queue_size": len(task_queue)}
+class TaskCompletionRequest(BaseModel):
+    task_id: str
+    status: str
+    result: Optional[Dict[str, Any]] = None
+    message: Optional[str] = None
 
-# 1. Endpoint to add a task (e.g. from frontend or BOM parser)
+@app.get("/")
+def read_root():
+    return {"status": "CADAutomata Cloud Backend Active", "queue_size": task_queue.qsize()}
+
 @app.post("/api/add-task")
-def add_task(task: ProcessBOMRequest):
-    task_queue.append(task.dict())
-    return {"status": "success", "message": f"Task {task.component_id} added to queue."}
+def add_task(task: BOMTaskRequest):
+    """Enqueues a new CAD adaptation task from clients."""
+    import uuid
+    task_id = str(uuid.uuid4())[:8]
+    task_data = task.dict()
+    task_data["task_id"] = task_id
+    
+    task_queue.put(task_data)
+    return {"status": "queued", "task_id": task_id}
 
-# 2. Endpoint for your local laptop worker to fetch the next job
 @app.get("/api/next-task")
 def get_next_task():
-    if not task_queue:
+    """Polled by the local Windows worker node to fetch the next CAD job."""
+    if task_queue.empty():
         return {"task": None}
-    # Pop the first task from the queue
-    next_task = task_queue.pop(0)
-    return {"task": next_task}
+    
+    task = task_queue.get()
+    return {"task": task}
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+@app.post("/api/complete-task")
+def complete_task(completion: TaskCompletionRequest):
+    """Receives execution results back from the local Windows worker node."""
+    task_results[completion.task_id] = {
+        "status": completion.status,
+        "result": completion.result,
+        "message": completion.message
+    }
+    return {"status": "acknowledged", "task_id": completion.task_id}
